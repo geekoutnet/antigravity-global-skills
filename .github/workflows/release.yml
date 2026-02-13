@@ -53,8 +53,8 @@ jobs:
       - name: 🏷️ 生成版本号
         id: version
         run: |
-          # 版本格式: v年.月.日-短SHA (如 v2026.02.13-f116c8d)
-          VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+          # 版本格式: v年.月.日-时分秒毫秒 (如 v2026.02.13-153042123)
+          VERSION="v$(date +'%Y.%m.%d-%H%M%S')$(date +'%N' | cut -c1-3)"
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
           echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
