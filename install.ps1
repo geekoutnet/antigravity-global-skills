@@ -1,4 +1,4 @@
-# ========================================================
+﻿# ========================================================
 # Antigravity Global Skills - 智能安装器 (Windows)
 # ========================================================
 # 支持两种模式:
@@ -7,6 +7,13 @@
 # ========================================================
 
 $ErrorActionPreference = "Stop"
+
+# --- 编码设置 (关键！防止中文 Windows 上输出 GBK 乱码) ---
+# PowerShell 5.x 默认使用系统本地编码 (中文=GBK)，必须强制 UTF-8
+$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+$PSDefaultParameterValues['Set-Content:Encoding'] = 'utf8'
+$PSDefaultParameterValues['Add-Content:Encoding'] = 'utf8'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # --- 配置 ---
 $REPO_OWNER = "geekoutnet"
@@ -24,7 +31,7 @@ $targetSkillsDir = "$globalConfigDir\skills"
 function Get-InstalledVersion {
     $versionFile = "$globalConfigDir\.skills-version"
     if (Test-Path $versionFile) {
-        return (Get-Content $versionFile -Raw).Trim()
+        return (Get-Content $versionFile -Raw -Encoding UTF8).Trim()
     }
     return $null
 }
@@ -35,7 +42,8 @@ function Get-InstalledVersion {
 function Save-InstalledVersion {
     param([string]$Version)
     $versionFile = "$globalConfigDir\.skills-version"
-    Set-Content -Path $versionFile -Value $Version -NoNewline
+    # 使用 .NET 方法写入 UTF-8 无 BOM (PowerShell 5.x 的 -Encoding UTF8 会加 BOM)
+    [System.IO.File]::WriteAllText($versionFile, $Version, (New-Object System.Text.UTF8Encoding $false))
 }
 
 # ========================================================
@@ -175,22 +183,68 @@ function Deploy-Skills {
 }
 
 # ========================================================
-# 函数: 动态生成 GEMINI.md 配置内容
-#   根据实际部署的 skills 目录自动生成配置
+# 固定默认头部内容 (宪法级 - 每次确保存在且正确)
+# ========================================================
+$DEFAULT_HEADER = @"
+**trigger: always_on**
+**alwaysApply: true**
+
+* **语言要求**：所有回复、思考过程及任务清单，均须使用中文   **中文**。
+
+## **核心理念与原则**
+
+* **简洁至上**：恪守 KISS (Keep It Simple, Stupid) 原则，崇尚简洁与可维护性，避免过度工程化与不必要的防御性设计。
+* **深度分析**：立足于第一性原理 (First Principles Thinking) 剖析问题，并善用工具以提升效率。
+* **事实为本**：以事实为最高准则。若有任何谬误，恳请坦率斧正，助我精进。
+* 每次都用审视的目光，仔细看我输入的潜在问题，你要指出我的问题，并给出明显在我思考框架之外的建议
+* 如果你觉得我说的太离谱了，你就骂回来，帮我瞬间清醒
+
+## **开发工作流**
+
+* **渐进式开发**：通过多轮次迭代，明确并实现需求。在着手任何设计或编码工作前，必须完成前期调研并厘清所有疑点。
+* **结构化流程**：严格遵循"构思方案 → 提请审核 → 分解为具体任务"的作业顺序。
+
+## **输出规范**
+
+💡
+* **语言要求**：所有回复、思考过程及任务清单，均须使用中文   **中文**。
+* **固定指令**：``Implementation Plan, Task List and The entire process must be written in Chinese``
+"@
+
+# ========================================================
+# 函数: 智能更新 GEMINI.md 配置
+#   1. 确保固定默认头部存在
+#   2. 动态扫描已部署的 skills，逐项检查并增补技能配置
 # ========================================================
 function Update-GeminiConfig {
     Write-Host "`n⚙️  正在更新 GEMINI.md 配置..." -ForegroundColor Yellow
 
+    # UTF-8 无 BOM 编码器 (关键！避免 PowerShell 5.x 默认的 GBK 或 UTF-8 BOM)
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+
+    # --- STEP 1: 确保文件存在，且包含固定默认头部 ---
     if (-not (Test-Path $geminiFile)) {
-        Set-Content -Path $geminiFile -Value "**trigger: always_on**`r`n**alwaysApply: true**`r`n`r`n## Global Config"
-        Write-Host "✅ 创建新的 GEMINI.md" -ForegroundColor Green
+        [System.IO.File]::WriteAllText($geminiFile, $DEFAULT_HEADER, $utf8NoBom)
+        Write-Host "✅ 创建新的 GEMINI.md (含默认头部)" -ForegroundColor Green
+    } else {
+        # 文件已存在，检查头部是否完整
+        $currentContent = [System.IO.File]::ReadAllText($geminiFile, $utf8NoBom)
+        # 用 "核心理念与原则" 作为头部完整性标志
+        if ($currentContent -notmatch '核心理念与原则') {
+            # 头部不完整或被损坏，在文件顶部插入默认头部
+            $updatedContent = $DEFAULT_HEADER + "`r`n`r`n" + $currentContent
+            [System.IO.File]::WriteAllText($geminiFile, $updatedContent, $utf8NoBom)
+            Write-Host "🔧 GEMINI.md 默认头部已修复" -ForegroundColor Yellow
+        } else {
+            Write-Host "✅ 默认头部完整，无需修改" -ForegroundColor Gray
+        }
     }
 
-    # 扫描已部署的技能目录，动态生成配置
+    # --- STEP 2: 扫描已部署的技能目录 ---
     $skillFolders = Get-ChildItem -Path $targetSkillsDir -Directory | Sort-Object Name
 
     if ($skillFolders.Count -eq 0) {
-        Write-Host "⚠️  未找到任何技能模块，跳过配置更新。" -ForegroundColor Yellow
+        Write-Host "⚠️  未找到任何技能模块，跳过技能配置更新。" -ForegroundColor Yellow
         return
     }
 
@@ -248,12 +302,21 @@ function Update-GeminiConfig {
         }
     }
 
-    # 开始构建配置块
-    $marker = "## **全局 Skills 技能配置**"
-    $configLines = @()
-    $configLines += ""
-    $configLines += $marker
-    $configLines += ""
+    # --- STEP 3: 重新读取文件内容，确保拿到最新版本 ---
+    $currentContent = [System.IO.File]::ReadAllText($geminiFile, $utf8NoBom)
+
+    # --- STEP 4: 确保 "## **全局 Skills 技能配置**" 段落标题存在 ---
+    $sectionMarker = "## **全局 Skills 技能配置**"
+    if ($currentContent -notmatch [regex]::Escape($sectionMarker)) {
+        # 首次添加技能配置段落
+        $currentContent = $currentContent.TrimEnd() + "`r`n`r`n$sectionMarker`r`n"
+        Write-Host "📌 添加技能配置段落标题" -ForegroundColor Gray
+    }
+
+    # --- STEP 5: 逐项检查每个技能，动态增补 ---
+    $addedCount = 0
+    $updatedCount = 0
+    $skippedCount = 0
 
     foreach ($folder in $skillFolders) {
         $name = $folder.Name
@@ -265,7 +328,7 @@ function Update-GeminiConfig {
             continue
         }
 
-        # 优先使用元数据映射，找不到则自动生成
+        # 获取技能元数据
         if ($skillMeta.ContainsKey($name)) {
             $meta = $skillMeta[$name]
             $icon    = $meta.Icon
@@ -279,44 +342,57 @@ function Update-GeminiConfig {
             $trigger = "当用户提到 $name 相关意图时"
             $role    = "以 $name 专家身份提供专业服务"
 
-            # 尝试解析 SKILL.md 的 YAML frontmatter
-            $mdContent = Get-Content $skillMdPath -Raw -ErrorAction SilentlyContinue
+            $mdContent = Get-Content $skillMdPath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
             if ($mdContent -match '(?ms)^---\s*\n(.*?)\n---') {
                 $frontmatter = $Matches[1]
                 if ($frontmatter -match 'name:\s*(.+)') { $title = $Matches[1].Trim() }
                 if ($frontmatter -match 'description:\s*(.+)') { $role = $Matches[1].Trim() }
             }
-
-            Write-Host "   🔧 自动发现新技能: $title ($name)" -ForegroundColor Magenta
         }
 
-        $configLines += "### $icon $title"
-        $configLines += "- **技能路径**: ``~/.gemini/skills/$name/SKILL.md``"
-        $configLines += "- **触发条件**: $trigger"
-        $configLines += "- **角色说明**: $role"
-        $configLines += "- **使用方式**: 检测到相关意图时，先读取 ``~/.gemini/skills/$name/SKILL.md`` 获取完整操作规范，然后按照规范执行操作"
-        $configLines += ""
+        # 构建该技能的配置块
+        $skillBlock = @(
+            "### $icon $title"
+            "- **技能路径**: ``~/.gemini/skills/$name/SKILL.md``"
+            "- **触发条件**: $trigger"
+            "- **角色说明**: $role"
+            "- **使用方式**: 检测到相关意图时，先读取 ``~/.gemini/skills/$name/SKILL.md`` 获取完整操作规范，然后按照规范执行操作"
+        ) -join "`r`n"
+
+        # 检查该技能是否已经配置 (通过技能路径唯一标识)
+        $skillPathPattern = [regex]::Escape("~/.gemini/skills/$name/SKILL.md")
+        if ($currentContent -match $skillPathPattern) {
+            # 已存在：用正则替换整个技能块 (从 ### 标题到下一个 ### 或文件末尾)
+            $blockPattern = "### .+\r?\n- \*\*技能路径\*\*: ``~/.gemini/skills/$([regex]::Escape($name))/SKILL\.md``\r?\n- \*\*触发条件\*\*: .+\r?\n- \*\*角色说明\*\*: .+\r?\n- \*\*使用方式\*\*: .+"
+            if ($currentContent -match $blockPattern) {
+                $currentContent = $currentContent -replace $blockPattern, $skillBlock
+                $updatedCount++
+                Write-Host "   🔄 $icon $title  (已更新)" -ForegroundColor DarkGray
+            } else {
+                $skippedCount++
+                Write-Host "   ✅ $icon $title  (已存在，格式不同，保留原样)" -ForegroundColor Gray
+            }
+        } else {
+            # 不存在：追加到文件末尾
+            $currentContent = $currentContent.TrimEnd() + "`r`n`r`n" + $skillBlock + "`r`n"
+            $addedCount++
+            Write-Host "   ➕ $icon $title  (新增)" -ForegroundColor Green
+        }
     }
 
-    $newConfigBlock = $configLines -join "`r`n"
+    # --- STEP 6: 写回文件 ---
+    [System.IO.File]::WriteAllText($geminiFile, $currentContent, $utf8NoBom)
 
-    # 读取现有内容
-    $currentContent = Get-Content -Path $geminiFile -Raw
-
-    # 检查是否已经存在配置段落
-    $markerEscaped = [regex]::Escape($marker)
-    if ($currentContent -match $markerEscaped) {
-        # 替换旧配置: 从标记开始到文件末尾 (或下一个 ## 标记)
-        # 策略: 删除从 marker 到文件末尾的所有内容，然后追加新配置
-        $markerIndex = $currentContent.IndexOf($marker)
-        $contentBefore = $currentContent.Substring(0, $markerIndex).TrimEnd()
-        $updatedContent = $contentBefore + "`r`n" + $newConfigBlock
-        Set-Content -Path $geminiFile -Value $updatedContent -NoNewline
-        Write-Host "🔄 GEMINI.md 配置已更新 (替换旧配置)！" -ForegroundColor Green
-    } else {
-        # 首次追加
-        Add-Content -Path $geminiFile -Value $newConfigBlock
-        Write-Host "✅ GEMINI.md 配置已追加！" -ForegroundColor Green
+    # 输出汇总
+    Write-Host ""
+    if ($addedCount -gt 0) {
+        Write-Host "📊 新增 $addedCount 个技能配置" -ForegroundColor Green
+    }
+    if ($updatedCount -gt 0) {
+        Write-Host "📊 更新 $updatedCount 个技能配置" -ForegroundColor Cyan
+    }
+    if ($addedCount -eq 0 -and $updatedCount -eq 0) {
+        Write-Host "✅ 所有技能配置已是最新，无需变更" -ForegroundColor Green
     }
 }
 
