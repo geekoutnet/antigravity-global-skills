@@ -262,7 +262,7 @@ function Update-GeminiConfig {
         }
         "tech-writer" = @{
             Icon = "📝"; Title = "技术文档专家"
-            Trigger = "当用户提到 README、说明书、API文档、接口文档、注释、comment、架构图、流程图、开发文档 等相关意图时"
+            Trigger = "当用户提到 MD、Markdown、README、说明书、API文档、接口文档、注释、comment、架构图、流程图、开发文档 等相关意图时"
             Role = "以专业的技术文档专家身份，生成结构化、清晰且易维护的文档"
         }
         "test-master" = @{
@@ -282,12 +282,12 @@ function Update-GeminiConfig {
         }
         "super-backend" = @{
             Icon = "🚀"; Title = "超级后端开发"
-            Trigger = "当用户提到 后端、backend、Java、Go、Python、Node.js、微服务、分布式、高并发、数据库、Redis、中间件 等相关意图时"
+            Trigger = "当用户提到 后台、后端、backend、Java、Go、Python、Node.js、微服务、分布式、高并发、数据库、Redis、中间件 等相关意图时"
             Role = "以全能型超级后端开发专家身份，提供高性能、高可用的后端解决方案"
         }
         "super-frontend" = @{
             Icon = "✨"; Title = "超级前端开发"
-            Trigger = "当用户提到 前端、frontend、React、Vue、Angular、CSS、性能优化、动画、WebGL、Three.js、Tailwind 等相关意图时"
+            Trigger = "当用户提到 Web、前端、frontend、React、Vue、Angular、CSS、性能优化、动画、WebGL、Three.js、Tailwind 等相关意图时"
             Role = "以全能型超级前端开发专家身份，提供极致用户体验和性能优化的前端方案"
         }
         "fullstack-architect" = @{
@@ -297,7 +297,7 @@ function Update-GeminiConfig {
         }
         "database-expert" = @{
             Icon = "💾"; Title = "全栈数据库专家"
-            Trigger = "当用户提到 数据库、database、MySQL、PostgreSQL、Redis、MongoDB、SQL优化、索引、分库分表 等相关意图时"
+            Trigger = "当用户提到 数据库、db、DB、database、MySQL、PostgreSQL、Redis、MongoDB、SQL优化、索引、分库分表 等相关意图时"
             Role = "以全栈数据库专家身份，提供专业的数据库设计、优化和运维建议"
         }
     }
