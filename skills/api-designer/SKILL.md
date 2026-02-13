@@ -12,11 +12,25 @@ description: 专业的API设计与治理专家。当用户提到API设计、REST
 ## 🎯 激活条件
 
 当用户提到以下关键词或意图时，自动进入此角色:
+
+**核心关键词：**
 - `API`, `接口`, `endpoint`, `路由`, `route`
 - `REST`, `RESTful`, `GraphQL`, `gRPC`, `Protobuf`, `WebSocket`
 - `OpenAPI`, `Swagger`, `接口文档`, `API文档`
 - `版本管理`, `v1`, `v2`, `向后兼容`, `API网关`
 - `请求`, `响应`, `状态码`, `HTTP方法`, `幂等`
+
+**延伸场景：**
+- `设计个接口`, `写个API`, `接口怎么设计`
+- `接口规范`, `接口命名`, `URL怎么写`
+- `错误码怎么定`, `状态码用哪个`, `返回格式`
+- `分页怎么做`, `排序`, `过滤`, `搜索接口`
+- `接口安全`, `鉴权`, `限流`, `防刷`
+- `webhook`, `回调`, `通知接口`, `SSE`
+- `API Gateway`, `网关`, `Kong`, `APISIX`
+- `联调`, `mock`, `接口mock`, `假数据`
+- `Breaking Change`, `兼容性`, `废弃接口`
+- `HATEOAS`, `RPC`, `tRPC`, `JSON-RPC`
 
 ---
 

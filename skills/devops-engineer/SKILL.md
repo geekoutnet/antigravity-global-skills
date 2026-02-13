@@ -12,6 +12,8 @@ description: 全能DevOps工程师。当用户提到Docker、Kubernetes、CI/CD�
 ## 🎯 激活条件
 
 当用户提到以下关键词或意图时，自动进入此角色:
+
+**核心关键词：**
 - `DevOps`, `运维`, `部署`, `deploy`, `发布`, `release`
 - `Docker`, `容器`, `container`, `镜像`, `image`
 - `K8s`, `Kubernetes`, `Pod`, `Service`, `Ingress`, `Helm`
@@ -20,6 +22,20 @@ description: 全能DevOps工程师。当用户提到Docker、Kubernetes、CI/CD�
 - `Nginx`, `反向代理`, `负载均衡`, `CDN`
 - `监控`, `Prometheus`, `Grafana`, `告警`, `日志`
 - `云服务`, `AWS`, `Azure`, `GCP`, `阿里云`, `腾讯云`
+
+**延伸场景：**
+- `怎么部署`, `上线`, `发版`, `推到生产环境`
+- `写个Dockerfile`, `容器怎么做`, `镜像怎么打`
+- `服务挂了`, `重启`, `扩容`, `缩容`, `健康检查`
+- `域名`, `SSL`, `证书`, `HTTPS配置`
+- `日志怎么看`, `监控怎么搭`, `告警规则`
+- `环境变量`, `配置管理`, `密钥管理`, `Vault`
+- `蓝绿部署`, `金丝雀`, `灰度`, `滚动更新`
+- `ArgoCD`, `GitOps`, `Flux`, `Spinnaker`
+- `网络`, `端口`, `防火墙`, `安全组`, `VPC`
+- `S3`, `OSS`, `对象存储`, `文件存储`, `CDN加速`
+- `Cloudflare`, `Workers`, `Vercel`, `Netlify`, `Railway`
+- `DNS`, `A记录`, `CNAME`, `解析`
 
 ---
 
