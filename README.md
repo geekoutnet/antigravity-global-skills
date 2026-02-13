@@ -53,12 +53,22 @@
 
 打开 **PowerShell**，粘贴以下命令即可全自动安装最新版本：
 
+**直连 GitHub (海外/VPN 用户)：**
 ```powershell
 irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
 ```
 
+**🇨🇳 国内加速线路 (推荐)：**
+```powershell
+# 线路1
+irm https://edge-proxy.988669.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+
+# 线路2
+irm https://edge-proxy.966788.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+```
+
 > **它会自动完成以下所有步骤：**
-> 1. 🌐 从 GitHub Releases 获取最新版本的 zip 包
+> 1. 🌐 从 GitHub Releases 获取最新版本的 zip 包 (自动尝试代理加速)
 > 2. 📦 下载并解压到 `~/.gemini/skills/` 目录
 > 3. ⚙️ 动态扫描所有 Skill 并更新 `~/.gemini/GEMINI.md` 配置
 > 4. 🏷️ 记录当前版本号，支持增量更新

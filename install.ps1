@@ -2,8 +2,10 @@
 # Antigravity Global Skills - 智能安装器 (Windows)
 # ========================================================
 # 支持两种模式:
-#   远程一键安装: irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
-#   本地安装:     右键 install.ps1 → 使用 PowerShell 运行
+#   远程一键安装 (直连):  irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+#   远程一键安装 (代理1): irm https://edge-proxy.988669.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+#   远程一键安装 (代理2): irm https://edge-proxy.966788.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+#   本地安装:             右键 install.ps1 → 使用 PowerShell 运行
 # ========================================================
 
 $ErrorActionPreference = "Stop"
@@ -19,6 +21,14 @@ $PSDefaultParameterValues['Add-Content:Encoding'] = 'utf8'
 $REPO_OWNER = "geekoutnet"
 $REPO_NAME  = "antigravity-global-skills"
 $GITHUB_API = "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest"
+
+# --- 代理配置 (国内加速) ---
+# 代理前缀列表，脚本会依次尝试直连 → 代理1 → 代理2
+$PROXY_PREFIXES = @(
+    ""                                  # 直连 (无前缀)
+    "https://edge-proxy.988669.xyz/"    # 代理线路1
+    "https://edge-proxy.966788.xyz/"    # 代理线路2
+)
 
 # --- 路径定义 ---
 $globalConfigDir = "$env:USERPROFILE\.gemini"
@@ -52,13 +62,28 @@ function Save-InstalledVersion {
 function Install-FromRemote {
     Write-Host "`n🌐 远程安装模式 - 正在从 GitHub 获取最新版本..." -ForegroundColor Cyan
 
-    # 获取最新 Release 信息
-    try {
-        $headers = @{ "Accept" = "application/vnd.github.v3+json"; "User-Agent" = "Antigravity-Installer" }
-        $release = Invoke-RestMethod -Uri $GITHUB_API -Headers $headers -TimeoutSec 30
-    } catch {
-        Write-Host "❌ 无法连接 GitHub API: $_" -ForegroundColor Red
-        Write-Host "💡 提示: 如果网络受限，请手动下载 Release 包安装。" -ForegroundColor Yellow
+    # 获取最新 Release 信息 (自动尝试代理回退)
+    $release = $null
+    $headers = @{ "Accept" = "application/vnd.github.v3+json"; "User-Agent" = "Antigravity-Installer" }
+    $usedProxy = ""
+
+    foreach ($proxy in $PROXY_PREFIXES) {
+        $apiUrl = "${proxy}${GITHUB_API}"
+        $label = if ($proxy) { "代理 ($proxy)" } else { "直连" }
+        try {
+            Write-Host "   🔗 尝试 ${label}..." -ForegroundColor Gray -NoNewline
+            $release = Invoke-RestMethod -Uri $apiUrl -Headers $headers -TimeoutSec 15
+            $usedProxy = $proxy
+            Write-Host " ✅" -ForegroundColor Green
+            break
+        } catch {
+            Write-Host " ❌" -ForegroundColor Red
+        }
+    }
+
+    if (-not $release) {
+        Write-Host "❌ 所有线路均无法连接 GitHub API" -ForegroundColor Red
+        Write-Host "💡 提示: 请检查网络连接，或手动下载 Release 包安装。" -ForegroundColor Yellow
         return $false
     }
 
@@ -87,7 +112,8 @@ function Install-FromRemote {
         return $false
     }
 
-    $downloadUrl = $zipAsset.browser_download_url
+    # 使用与 API 相同的代理前缀下载 zip
+    $downloadUrl = "${usedProxy}$($zipAsset.browser_download_url)"
     $zipName     = $zipAsset.name
     $fileSize    = [math]::Round($zipAsset.size / 1MB, 2)
     Write-Host "📦 下载: $zipName ($fileSize MB)" -ForegroundColor White
