@@ -93,10 +93,15 @@ function Install-FromRemote {
 
     Write-Host "📌 最新版本: $latestTag ($releaseName)" -ForegroundColor White
 
-    # 版本比对
-    if ($installedVersion -eq $latestTag) {
+    # 版本比对 (同时检查 skills 目录是否完整)
+    if ($installedVersion -eq $latestTag -and (Test-Path $targetSkillsDir)) {
         Write-Host "✅ 当前已经是最新版本 ($latestTag)，无需更新。" -ForegroundColor Green
         return $true
+    }
+
+    # 版本号相同但 skills 目录缺失 (异常恢复)
+    if ($installedVersion -eq $latestTag -and -not (Test-Path $targetSkillsDir)) {
+        Write-Host "⚠️  版本号匹配但 skills 目录缺失，将重新部署..." -ForegroundColor Yellow
     }
 
     if ($installedVersion) {
@@ -267,6 +272,12 @@ function Update-GeminiConfig {
     }
 
     # --- STEP 2: 扫描已部署的技能目录 ---
+    if (-not (Test-Path $targetSkillsDir)) {
+        Write-Host "⚠️  技能目录不存在: $targetSkillsDir，跳过技能配置更新。" -ForegroundColor Yellow
+        Write-Host "💡 提示: 这可能是首次安装但版本比对跳过了部署，请删除版本文件后重试。" -ForegroundColor Gray
+        return
+    }
+
     $skillFolders = Get-ChildItem -Path $targetSkillsDir -Directory | Sort-Object Name
 
     if ($skillFolders.Count -eq 0) {
