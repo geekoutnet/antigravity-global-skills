@@ -1,12 +1,17 @@
 # ============================================================
 # Antigravity Global Skills - 自动打包发布工作流
 # ============================================================
+# 版本策略: 语义化版本号 (SemVer)
+#   - 首次发布: v0.0.1
+#   - push 触发: 自动递增 patch (v0.0.1 → v0.0.2 → v0.0.3)
+#   - 手动触发: 可选择递增级别 (patch/minor/major) 或指定版本号
+#
 # 触发条件:
 #   1. 推送到 main 或 master 分支时自动触发
 #   2. 手动触发 (Actions → Run workflow)
 #
 # 工作流程:
-#   1. 生成版本号 (日期 + 短SHA, 如 v2026.02.13-f116c8d)
+#   1. 从 Git Tags 获取上一版本，自动计算下一版本号
 #   2. 将 skills/ 目录和 install.ps1 打包为 zip
 #   3. 创建 GitHub Release 并上传 zip 到 Assets
 #
@@ -19,11 +24,25 @@ on:
   push:
     branches: [main, master]
     paths:
+      - '.github/workflows/**'
       - 'skills/**'
       - 'install.ps1'
       - 'README.md'
   workflow_dispatch:
     inputs:
+      bump_type:
+        description: '版本递增级别'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: '自定义版本号 (可选, 如 1.2.0, 留空则自动递增)'
+        required: false
+        default: ''
       release_note:
         description: '发布说明 (可选)'
         required: false
@@ -47,27 +66,85 @@ jobs:
       - name: 📥 检出仓库代码
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 获取完整历史以生成 changelog
+          fetch-depth: 0  # 获取完整历史和所有 tags
 
-      # --- 2. 生成版本信息 ---
-      - name: 🏷️ 生成版本号
+      # --- 2. 计算语义化版本号 ---
+      - name: 🏷️ 计算版本号
         id: version
         run: |
-          # 版本格式: v年.月.日-时分秒毫秒 (如 v2026.02.13-153042123)
-          VERSION="v$(date +'%Y.%m.%d-%H%M%S')$(date +'%N' | cut -c1-3)"
-          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          # 获取最新的语义化版本 tag (严格匹配 v数字.数字.数字 格式)
+          # 使用 grep -E 精确过滤，排除旧的时间戳格式 (如 v2026.02.13-xxxx)
+          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+
+          if [ -z "$LATEST_TAG" ]; then
+            echo "📌 未找到任何版本 tag，将从 v0.0.1 开始"
+            CURRENT_MAJOR=0
+            CURRENT_MINOR=0
+            CURRENT_PATCH=0
+          else
+            echo "📌 当前最新版本: $LATEST_TAG"
+            # 解析版本号 (去掉前缀 v)
+            VERSION_NUM="${LATEST_TAG#v}"
+            CURRENT_MAJOR=$(echo "$VERSION_NUM" | cut -d. -f1)
+            CURRENT_MINOR=$(echo "$VERSION_NUM" | cut -d. -f2)
+            CURRENT_PATCH=$(echo "$VERSION_NUM" | cut -d. -f3)
+          fi
+
+          # 确定递增方式
+          BUMP_TYPE="${{ github.event.inputs.bump_type }}"
+          CUSTOM_VERSION="${{ github.event.inputs.custom_version }}"
+
+          if [ -n "$CUSTOM_VERSION" ]; then
+            # 使用自定义版本号 (去掉用户可能输入的 v 前缀)
+            NEW_VERSION="${CUSTOM_VERSION#v}"
+            echo "📌 使用自定义版本号: v$NEW_VERSION"
+          else
+            # 自动递增
+            # push 触发默认为 patch
+            if [ -z "$BUMP_TYPE" ]; then
+              BUMP_TYPE="patch"
+            fi
+
+            case "$BUMP_TYPE" in
+              major)
+                NEW_VERSION="$((CURRENT_MAJOR + 1)).0.0"
+                ;;
+              minor)
+                NEW_VERSION="${CURRENT_MAJOR}.$((CURRENT_MINOR + 1)).0"
+                ;;
+              patch|*)
+                NEW_VERSION="${CURRENT_MAJOR}.${CURRENT_MINOR}.$((CURRENT_PATCH + 1))"
+                ;;
+            esac
+            echo "📌 递增方式: $BUMP_TYPE → v$NEW_VERSION"
+          fi
+
+          TAG="v${NEW_VERSION}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+          echo "previous=${LATEST_TAG:-无}" >> $GITHUB_OUTPUT
 
           # 获取最近的提交信息作为 changelog
-          CHANGELOG=$(git log --oneline -10 --pretty=format:"- %s (%h)" 2>/dev/null || echo "- 初始版本")
-          # 使用 heredoc 写多行输出
+          if [ -n "$LATEST_TAG" ]; then
+            CHANGELOG=$(git log "${LATEST_TAG}..HEAD" --oneline --pretty=format:"- %s (%h)" 2>/dev/null || echo "- 初始版本")
+          else
+            CHANGELOG=$(git log --oneline -10 --pretty=format:"- %s (%h)" 2>/dev/null || echo "- 初始版本")
+          fi
+
+          # 如果 changelog 为空 (没有新提交)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="- 版本号更新"
+          fi
+
           {
             echo "changelog<<EOF"
             echo "$CHANGELOG"
             echo "EOF"
           } >> $GITHUB_OUTPUT
 
-          echo "📌 版本号: $VERSION"
+          echo ""
+          echo "🎯 新版本号: $TAG"
 
       # --- 3. 统计 Skills 信息 ---
       - name: 📊 统计技能包信息
@@ -96,16 +173,19 @@ jobs:
           FILE_SIZE=$(du -h "$ZIP_NAME" | cut -f1)
           echo "📦 打包完成: $ZIP_NAME ($FILE_SIZE)"
 
-      # --- 5. 删除同名旧 tag (防止重复) ---
-      - name: 🗑️ 清理同名旧标签
+      # --- 5. 检查版本冲突 ---
+      - name: � 检查版本冲突
         run: |
           TAG="${{ steps.version.outputs.tag }}"
+          # 如果 tag 已存在，先清理
           if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "⚠️  标签 $TAG 已存在，将覆盖发布"
             git push origin --delete "$TAG" 2>/dev/null || true
-            echo "🗑️ 已删除旧标签: $TAG"
+            gh release delete "$TAG" --yes 2>/dev/null || true
+            echo "🗑️ 已清理旧版本: $TAG"
+          else
+            echo "✅ 标签 $TAG 不存在，可以创建"
           fi
-          # 同时清理旧的 Release
-          gh release delete "$TAG" --yes 2>/dev/null || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -119,6 +199,7 @@ jobs:
             ## 📦 Antigravity Global Skills 技能包更新
 
             **版本**: `${{ steps.version.outputs.tag }}`
+            **上一版本**: `${{ steps.version.outputs.previous }}`
             **发布时间**: ${{ steps.version.outputs.date }}
             **技能数量**: ${{ steps.stats.outputs.count }} 个
 
@@ -127,7 +208,7 @@ jobs:
             ### 📋 包含的技能模块
             ${{ steps.stats.outputs.list }}
 
-            ### 📝 最近更新
+            ### 📝 更新日志
             ${{ steps.version.outputs.changelog }}
 
             ---
@@ -163,6 +244,7 @@ jobs:
           echo "| 项目 | 值 |" >> $GITHUB_STEP_SUMMARY
           echo "|:---|:---|" >> $GITHUB_STEP_SUMMARY
           echo "| 版本号 | \`${{ steps.version.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 上一版本 | \`${{ steps.version.outputs.previous }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| 技能数量 | ${{ steps.stats.outputs.count }} 个 |" >> $GITHUB_STEP_SUMMARY
           echo "| 包文件 | \`${{ env.ZIP_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| 触发方式 | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
