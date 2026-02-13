@@ -300,6 +300,36 @@ function Update-GeminiConfig {
             Trigger = "当用户提到 数据库、db、DB、database、MySQL、PostgreSQL、Redis、MongoDB、SQL优化、索引、分库分表 等相关意图时"
             Role = "以全栈数据库专家身份，提供专业的数据库设计、优化和运维建议"
         }
+        "security-guard" = @{
+            Icon = "🛡️"; Title = "安全卫士"
+            Trigger = "当用户提到 安全、security、漏洞、vulnerability、XSS、CSRF、SQL注入、认证、授权、JWT、OAuth、渗透测试、OWASP、加密、依赖审计 等相关意图时"
+            Role = "以全方位安全防护专家身份，提供代码级安全分析、OWASP防御和安全加固方案"
+        }
+        "perf-optimizer" = @{
+            Icon = "⚡"; Title = "性能优化师"
+            Trigger = "当用户提到 性能、performance、慢查询、内存泄漏、Lighthouse、FPS、延迟、吞吐量、QPS、压测、profiling、火焰图 等相关意图时"
+            Role = "以全栈性能优化专家身份，提供从前端渲染到后端服务到数据库的全链路性能调优方案"
+        }
+        "devops-engineer" = @{
+            Icon = "🐳"; Title = "DevOps工程师"
+            Trigger = "当用户提到 DevOps、Docker、容器、K8s、Kubernetes、CI/CD、流水线、Terraform、Ansible、Nginx、部署、deploy、云服务、AWS、监控 等相关意图时"
+            Role = "以全能DevOps工程师身份，提供从构建到部署到监控的全流程自动化方案"
+        }
+        "prompt-engineer" = @{
+            Icon = "🤖"; Title = "AI提示词工程师"
+            Trigger = "当用户提到 提示词、prompt、Prompt Engineering、AI、LLM、大模型、RAG、向量数据库、Agent、智能体、function calling、微调、fine-tuning 等相关意图时"
+            Role = "以专业AI提示词与Agent编排专家身份，提供高质量的提示词设计和AI系统架构方案"
+        }
+        "api-designer" = @{
+            Icon = "📐"; Title = "API设计师"
+            Trigger = "当用户提到 API设计、RESTful、GraphQL、gRPC、OpenAPI、Swagger、接口规范、API版本管理、接口文档、endpoint 等相关意图时"
+            Role = "以专业API设计与治理专家身份，提供高质量的API设计方案和接口规范"
+        }
+        "refactor-master" = @{
+            Icon = "🔄"; Title = "重构大师"
+            Trigger = "当用户提到 重构、refactor、代码异味、code smell、技术债务、tech debt、遗留代码、legacy、Clean Code、SOLID、模块化拆分 等相关意图时"
+            Role = "以代码重构与技术债务治理专家身份，提供安全、渐进式的重构策略和实施方案"
+        }
     }
 
     # --- STEP 3: 重新读取文件内容，确保拿到最新版本 ---
