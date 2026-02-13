@@ -286,85 +286,86 @@ function Update-GeminiConfig {
     }
 
     # 技能说明的元数据映射表（以目录名为 key）
+    # 📌 触发条件和角色描述必须与各 SKILL.md 保持一致
     $skillMeta = @{
         "git-master" = @{
             Icon = "🏆"; Title = "超级Git管理大师"
-            Trigger = "当用户提到 git、提交、commit、push、pull、拉取、推送、分支、branch、merge、合并、rebase、冲突、tag、回滚、revert、reset、stash、cherry-pick、diff、日志、log 等 Git 相关操作时"
+            Trigger = "当用户提到 git、提交、commit、push、pull、拉取、推送、分支、branch、merge、合并、rebase、冲突、tag、回滚、revert、reset、stash、cherry-pick、diff、日志、log、帮我提交、代码推上去、切分支、合过来、gitignore、blame 等 Git 相关操作时"
             Role = "以专业的超级Git管理大师身份，提供安全、规范的Git操作服务"
         }
         "code-reviewer" = @{
             Icon = "🔍"; Title = "代码审查专家"
-            Trigger = "当用户提到 review、审查、代码检查、CR、优化、改进、refactor、重构建议、性能分析、安全检查、漏洞扫描、代码质量、规范检查 等相关意图时"
-            Role = "以专业的代码审查专家身份，提供深度、多维度的代码分析报告"
+            Trigger = "当用户提到 review、审查、代码检查、CR、code review、帮我看看、优化、改进、性能分析、安全检查、漏洞扫描、代码质量、规范检查、code smell、linter、eslint、best practice 等相关意图时"
+            Role = "以专业的代码审查专家身份，提供安全、性能、架构、可读性、可测试性、可维护性六维度深度代码分析报告"
         }
         "tech-writer" = @{
             Icon = "📝"; Title = "技术文档专家"
-            Trigger = "当用户提到 MD、Markdown、README、说明书、API文档、接口文档、注释、comment、架构图、流程图、开发文档 等相关意图时"
-            Role = "以专业的技术文档专家身份，生成结构化、清晰且易维护的文档"
+            Trigger = "当用户提到 README、说明书、API文档、接口文档、注释、comment、JSDoc、docstring、架构图、mermaid、流程图、UML、时序图、开发文档、CHANGELOG、变更日志、贡献指南、Markdown 等相关意图时"
+            Role = "以专业的技术文档专家身份，生成结构化、清晰且易维护的文档，包含README、API文档、代码注释、Mermaid架构图和变更日志"
         }
         "test-master" = @{
             Icon = "🧪"; Title = "测试驱动大师"
-            Trigger = "当用户提到 test、测试、TDD、单元测试、unit tests、e2e、integration tests、集成测试、Jest、Pytest、coverage、覆盖率 等相关意图时"
-            Role = "以专业的测试驱动大师身份，编写可靠、全覆盖的测试用例"
+            Trigger = "当用户提到 test、测试、TDD、BDD、单元测试、unit test、e2e、端到端、集成测试、Jest、Vitest、Pytest、Playwright、Cypress、coverage、覆盖率、mock、fixture、snapshot、flaky test 等相关意图时"
+            Role = "以专业的测试驱动大师身份，精通测试金字塔策略，编写可靠、全覆盖的单元/集成/E2E测试用例"
         }
         "architect" = @{
             Icon = "🏗️"; Title = "系统架构师"
-            Trigger = "当用户提到 架构、structure、目录结构、scaffold、设计模式、design pattern、技术选型、stack、重构、refactor、解耦 等相关意图时"
-            Role = "以专业的系统架构师身份，提供项目初始化、技术选型或架构重构建议"
+            Trigger = "当用户提到 架构、structure、目录结构、scaffold、脚手架、设计模式、design pattern、技术选型、stack、重构、refactor、解耦、DDD、领域驱动、Monorepo、Clean Architecture、ADR、C4模型、怎么组织代码 等相关意图时"
+            Role = "以专业的系统架构师身份，基于C4模型和ADR决策记录，提供项目初始化、技术选型或架构重构建议"
         }
         "debug-detective" = @{
             Icon = "🐞"; Title = "调试侦探"
-            Trigger = "当用户提到 debug、调试、报错、error、Exception、崩溃、fix、修复、bug、日志、log、排查、troubleshoot 等相关意图时"
-            Role = "以专业的调试侦探身份，提供深度日志分析和假设验证法排查思路"
+            Trigger = "当用户提到 debug、调试、报错、error、Exception、崩溃、crash、fix、修复、bug、日志、log、排查、troubleshoot、不工作了、白屏、500、超时、timeout、卡住了、数据不对、偶发、为什么 等相关意图时"
+            Role = "以专业的调试侦探身份，采用OODA循环和科学假设验证法，提供全链路分层诊断和根因分析"
         }
         "super-backend" = @{
             Icon = "🚀"; Title = "超级后端开发"
-            Trigger = "当用户提到 后台、后端、backend、Java、Go、Python、Node.js、微服务、分布式、高并发、数据库、Redis、中间件 等相关意图时"
-            Role = "以全能型超级后端开发专家身份，提供高性能、高可用的后端解决方案"
+            Trigger = "当用户提到 后端、backend、服务端、API开发、Java、Go、Python、Node.js、Rust、微服务、分布式、高并发、Redis、消息队列、Kafka、Spring、NestJS、FastAPI、Gin、写个接口、写个服务、登录注册、熔断限流 等相关意图时"
+            Role = "以全能型超级后端开发专家身份，精通Java/Go/Python/Node.js/Rust，提供高性能、高可用、高扩展的企业级后端解决方案"
         }
         "super-frontend" = @{
             Icon = "✨"; Title = "超级前端开发"
-            Trigger = "当用户提到 Web、前端、frontend、React、Vue、Angular、CSS、性能优化、动画、WebGL、Three.js、Tailwind 等相关意图时"
-            Role = "以全能型超级前端开发专家身份，提供极致用户体验和性能优化的前端方案"
+            Trigger = "当用户提到 前端、frontend、UI、React、Vue、Angular、Svelte、Next.js、TypeScript、CSS、Tailwind、动画、WebGL、Three.js、组件、写个页面、样式、布局、响应式、暗黑模式、状态管理、Vite、Storybook、SEO 等相关意图时"
+            Role = "以全能型超级前端开发专家身份，精通三大框架和Web Vitals优化，提供极致用户体验和性能优化的前端方案"
         }
         "fullstack-architect" = @{
             Icon = "🏛️"; Title = "全栈架构师"
-            Trigger = "当用户提到 全栈、fullstack、架构、architecture、系统设计、技术选型、云原生、K8s、DevOps、CI/CD 等相关意图时"
-            Role = "以顶级全栈架构师身份，提供全局视野的系统规划和技术治理建议"
+            Trigger = "当用户提到 全栈、fullstack、系统设计、System Design、技术选型、云原生、K8s、微服务拆分、Monolith、SOA、事件驱动、Service Mesh、Serverless、CAP、高并发系统、系统怎么设计、扛不住了、怎么扩展 等相关意图时"
+            Role = "以顶级全栈架构师身份，具备上帝视角，提供从前端到后端到基础设施的全局系统规划和技术治理建议"
         }
         "database-expert" = @{
             Icon = "💾"; Title = "全栈数据库专家"
-            Trigger = "当用户提到 数据库、db、DB、database、MySQL、PostgreSQL、Redis、MongoDB、SQL优化、索引、分库分表 等相关意图时"
-            Role = "以全栈数据库专家身份，提供专业的数据库设计、优化和运维建议"
+            Trigger = "当用户提到 数据库、database、MySQL、PostgreSQL、Redis、MongoDB、Elasticsearch、TiDB、SQL优化、慢查询、索引、分库分表、ORM、Prisma、表结构、建表、查询太慢了、连接池、死锁、数据迁移 等相关意图时"
+            Role = "以全栈数据库专家身份，精通RDBMS/NoSQL/NewSQL，提供专业的数据库设计、SQL优化、高可用架构和数据迁移方案"
         }
         "security-guard" = @{
             Icon = "🛡️"; Title = "安全卫士"
-            Trigger = "当用户提到 安全、security、漏洞、vulnerability、XSS、CSRF、SQL注入、认证、授权、JWT、OAuth、渗透测试、OWASP、加密、依赖审计 等相关意图时"
-            Role = "以全方位安全防护专家身份，提供代码级安全分析、OWASP防御和安全加固方案"
+            Trigger = "当用户提到 安全、security、漏洞、vulnerability、XSS、CSRF、SQL注入、认证、授权、JWT、OAuth、OWASP、加密、密钥管理、依赖审计、CORS、CSP、限流防刷、日志脱敏、GDPR、安全吗、会不会被攻击 等相关意图时"
+            Role = "以全方位安全防护专家身份，实施零信任和纵深防御理念，提供代码级安全分析、OWASP防御和安全加固方案"
         }
         "perf-optimizer" = @{
             Icon = "⚡"; Title = "性能优化师"
-            Trigger = "当用户提到 性能、performance、慢查询、内存泄漏、Lighthouse、FPS、延迟、吞吐量、QPS、压测、profiling、火焰图 等相关意图时"
-            Role = "以全栈性能优化专家身份，提供从前端渲染到后端服务到数据库的全链路性能调优方案"
+            Trigger = "当用户提到 性能、performance、慢查询、内存泄漏、Lighthouse、Web Vitals、FPS、延迟、吞吐量、QPS、压测、profiling、火焰图、打开太慢了、包太大了、并发上不去、CPU高、wrk、k6、benchmark 等相关意图时"
+            Role = "以全栈性能优化专家身份，用数据说话，提供从前端渲染到后端服务到数据库的全链路性能精准诊断和调优方案"
         }
         "devops-engineer" = @{
             Icon = "🐳"; Title = "DevOps工程师"
-            Trigger = "当用户提到 DevOps、Docker、容器、K8s、Kubernetes、CI/CD、流水线、Terraform、Ansible、Nginx、部署、deploy、云服务、AWS、监控 等相关意图时"
-            Role = "以全能DevOps工程师身份，提供从构建到部署到监控的全流程自动化方案"
+            Trigger = "当用户提到 DevOps、运维、部署、deploy、Docker、容器、K8s、Kubernetes、CI/CD、流水线、GitHub Actions、Terraform、Ansible、Nginx、监控、Prometheus、Grafana、云服务、AWS、怎么部署、上线、SSL、蓝绿部署、ArgoCD、GitOps 等相关意图时"
+            Role = "以全能DevOps工程师身份，提供从容器化构建到CI/CD流水线到监控告警的全流程自动化方案"
         }
         "prompt-engineer" = @{
             Icon = "🤖"; Title = "AI提示词工程师"
-            Trigger = "当用户提到 提示词、prompt、Prompt Engineering、AI、LLM、大模型、RAG、向量数据库、Agent、智能体、function calling、微调、fine-tuning 等相关意图时"
-            Role = "以专业AI提示词与Agent编排专家身份，提供高质量的提示词设计和AI系统架构方案"
+            Trigger = "当用户提到 提示词、prompt、Prompt Engineering、AI、LLM、大模型、GPT、Claude、Gemini、RAG、向量数据库、Agent、智能体、function calling、微调、CoT、思维链、MCP、LangChain、Cursor Rules、SKILL.md、AI效果不好 等相关意图时"
+            Role = "以专业AI提示词与Agent编排专家身份，提供基于COSTAR公式的高质量提示词设计、RAG系统架构和多Agent编排方案"
         }
         "api-designer" = @{
             Icon = "📐"; Title = "API设计师"
-            Trigger = "当用户提到 API设计、RESTful、GraphQL、gRPC、OpenAPI、Swagger、接口规范、API版本管理、接口文档、endpoint 等相关意图时"
-            Role = "以专业API设计与治理专家身份，提供高质量的API设计方案和接口规范"
+            Trigger = "当用户提到 API设计、RESTful、GraphQL、gRPC、OpenAPI、Swagger、接口规范、API版本管理、接口文档、endpoint、设计个接口、错误码、分页、webhook、API Gateway、tRPC、联调、mock 等相关意图时"
+            Role = "以专业API设计与治理专家身份，提供高质量的RESTful/GraphQL/gRPC API设计方案和接口规范"
         }
         "refactor-master" = @{
             Icon = "🔄"; Title = "重构大师"
-            Trigger = "当用户提到 重构、refactor、代码异味、code smell、技术债务、tech debt、遗留代码、legacy、Clean Code、SOLID、模块化拆分 等相关意图时"
+            Trigger = "当用户提到 重构、refactor、代码异味、code smell、技术债务、tech debt、遗留代码、legacy、屎山、烂代码、Clean Code、SOLID、模块化拆分、代码太乱了、改不动了、太复杂了、耦合太严重、圈复杂度 等相关意图时"
             Role = "以代码重构与技术债务治理专家身份，提供安全、渐进式的重构策略和实施方案"
         }
     }
