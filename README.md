@@ -58,12 +58,13 @@
 irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
 ```
 
-**🇨🇳 国内加速线路 (推荐)：**
+**🇨🇳 国内加速线路1：**
 ```powershell
-# 线路1
 irm https://edge-proxy.988669.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+```
 
-# 线路2
+**🇨🇳 国内加速线路2：**
+```powershell
 irm https://edge-proxy.966788.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
 ```
 
