@@ -1,0 +1,156 @@
+# ============================================================
+# Antigravity Global Skills - 自动打包发布工作流
+# ============================================================
+# 触发条件:
+#   1. 推送到 main 或 master 分支时自动触发
+#   2. 手动触发 (Actions → Run workflow)
+#
+# 工作流程:
+#   1. 生成版本号 (日期 + 短SHA, 如 v2026.02.13-f116c8d)
+#   2. 将 skills/ 目录和 install.ps1 打包为 zip
+#   3. 创建 GitHub Release 并上传 zip 到 Assets
+#
+# 使用者通过远程执行 install.ps1 即可自动拉取最新 Release 的 zip 包
+# ============================================================
+
+name: 📦 Build & Release Skills Package
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'skills/**'
+      - 'install.ps1'
+      - 'README.md'
+  workflow_dispatch:
+    inputs:
+      release_note:
+        description: '发布说明 (可选)'
+        required: false
+        default: '手动触发的技能包更新'
+
+# 确保同一时间只有一个发布流程在运行
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: 🚀 打包并发布
+    runs-on: ubuntu-latest
+
+    steps:
+      # --- 1. 检出代码 ---
+      - name: 📥 检出仓库代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史以生成 changelog
+
+      # --- 2. 生成版本信息 ---
+      - name: 🏷️ 生成版本号
+        id: version
+        run: |
+          # 版本格式: v年.月.日-短SHA (如 v2026.02.13-f116c8d)
+          VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+          echo "tag=$VERSION" >> $GITHUB_OUTPUT
+          echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+          # 获取最近的提交信息作为 changelog
+          CHANGELOG=$(git log --oneline -10 --pretty=format:"- %s (%h)" 2>/dev/null || echo "- 初始版本")
+          # 使用 heredoc 写多行输出
+          {
+            echo "changelog<<EOF"
+            echo "$CHANGELOG"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          echo "📌 版本号: $VERSION"
+
+      # --- 3. 统计 Skills 信息 ---
+      - name: 📊 统计技能包信息
+        id: stats
+        run: |
+          SKILL_COUNT=$(find skills -maxdepth 1 -mindepth 1 -type d | wc -l)
+          SKILL_LIST=$(find skills -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | sort | while read name; do echo "  - \`$name\`"; done)
+          echo "count=$SKILL_COUNT" >> $GITHUB_OUTPUT
+          {
+            echo "list<<EOF"
+            echo "$SKILL_LIST"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          echo "📦 包含 $SKILL_COUNT 个技能模块"
+
+      # --- 4. 打包为 zip ---
+      - name: 📦 打包技能包
+        run: |
+          ZIP_NAME="antigravity-global-skills-${{ steps.version.outputs.tag }}.zip"
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+          # 打包 skills/ 目录和 install.ps1
+          zip -r "$ZIP_NAME" skills/ install.ps1 README.md
+          
+          # 输出文件信息
+          FILE_SIZE=$(du -h "$ZIP_NAME" | cut -f1)
+          echo "📦 打包完成: $ZIP_NAME ($FILE_SIZE)"
+
+      # --- 5. 删除同名旧 tag (防止重复) ---
+      - name: 🗑️ 清理同名旧标签
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            git push origin --delete "$TAG" 2>/dev/null || true
+            echo "🗑️ 已删除旧标签: $TAG"
+          fi
+          # 同时清理旧的 Release
+          gh release delete "$TAG" --yes 2>/dev/null || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- 6. 创建 Release 并上传 ---
+      - name: 🎉 创建 Release 并上传资源
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "🚀 Skills Package ${{ steps.version.outputs.tag }}"
+          body: |
+            ## 📦 Antigravity Global Skills 技能包更新
+
+            **版本**: `${{ steps.version.outputs.tag }}`
+            **发布时间**: ${{ steps.version.outputs.date }}
+            **技能数量**: ${{ steps.stats.outputs.count }} 个
+
+            ${{ github.event_name == 'workflow_dispatch' && format('**发布说明**: {0}', github.event.inputs.release_note) || '' }}
+
+            ### 📋 包含的技能模块
+            ${{ steps.stats.outputs.list }}
+
+            ### 📝 最近更新
+            ${{ steps.version.outputs.changelog }}
+
+            ---
+
+            ### ⚡ 一键安装
+            ```powershell
+            irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+            ```
+          files: ${{ env.ZIP_NAME }}
+          draft: false
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- 7. 输出摘要 ---
+      - name: 📝 输出构建摘要
+        run: |
+          echo "## 🎉 发布成功！" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 项目 | 值 |" >> $GITHUB_STEP_SUMMARY
+          echo "|:---|:---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 版本号 | \`${{ steps.version.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 技能数量 | ${{ steps.stats.outputs.count }} 个 |" >> $GITHUB_STEP_SUMMARY
+          echo "| 包文件 | \`${{ env.ZIP_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 触发方式 | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
