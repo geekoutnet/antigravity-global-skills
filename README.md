@@ -60,12 +60,12 @@ irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/maste
 
 **🇨🇳 国内加速线路1：**
 ```powershell
-irm https://edge-proxy.988669.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+irm https://gh-raw.988669.xyz/anti-skills/install.ps1 | iex
 ```
 
 **🇨🇳 国内加速线路2：**
 ```powershell
-irm https://edge-proxy.966788.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+irm https://gh-raw.966788.xyz/anti-skills/install.ps1 | iex
 ```
 
 > **它会自动完成以下所有步骤：**

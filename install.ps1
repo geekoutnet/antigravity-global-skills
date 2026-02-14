@@ -3,8 +3,8 @@
 # ========================================================
 # 支持两种模式:
 #   远程一键安装 (直连):  irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
-#   远程一键安装 (代理1): irm https://edge-proxy.988669.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
-#   远程一键安装 (代理2): irm https://edge-proxy.966788.xyz/https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
+#   远程一键安装 (代理1): irm https://gh-raw.988669.xyz/anti-skills/install.ps1 | iex
+#   远程一键安装 (代理2): irm https://gh-raw.966788.xyz/anti-skills/install.ps1 | iex
 #   本地安装:             右键 install.ps1 → 使用 PowerShell 运行
 # ========================================================
 
