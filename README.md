@@ -51,7 +51,9 @@
 
 ## ⚡ 一键远程安装 (推荐)
 
-打开 **PowerShell**，粘贴以下命令即可全自动安装最新版本：
+打开 **PowerShell**，根据你使用的 AI 编码工具，选择对应的安装命令：
+
+### 🌟 Antigravity / Gemini CLI
 
 **直连 GitHub (海外/VPN 用户)：**
 ```powershell
@@ -73,6 +75,39 @@ irm https://gh-raw.966788.xyz/anti-skills/install.ps1 | iex
 > 2. 📦 下载并解压到 `~/.gemini/skills/` 目录
 > 3. ⚙️ 动态扫描所有 Skill 并更新 `~/.gemini/GEMINI.md` 配置
 > 4. 🏷️ 记录当前版本号，支持增量更新
+
+### 🤖 OpenAI Codex CLI
+
+```powershell
+irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install-codex.ps1 | iex
+```
+
+🇨🇳 国内加速:
+```powershell
+irm https://gh-raw.988669.xyz/anti-skills/install-codex.ps1 | iex
+```
+
+> **安装原理：**
+> - Codex CLI 通过 `~/.codex/AGENTS.md` 读取全局指令
+> - 脚本将所有 16 个技能的完整指令整合到一个 `AGENTS.md` 文件中
+> - Codex 启动时自动加载，无需额外配置
+
+### 🟣 Claude Code CLI
+
+```powershell
+irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install-claude.ps1 | iex
+```
+
+🇨🇳 国内加速:
+```powershell
+irm https://gh-raw.988669.xyz/anti-skills/install-claude.ps1 | iex
+```
+
+> **安装原理：**
+> - 将完整技能写入 `~/.claude/CLAUDE.md` 全局指令文件
+> - 同时为每个技能创建独立的自定义斜杠命令 (`~/.claude/commands/`)
+> - 可通过 `/user:<技能名>` 手动激活 (如 `/user:git-master`)
+> - 也会在对话中自动匹配触发条件激活
 
 **更新到最新版？再执行一次同样的命令即可！** 脚本会自动判断版本，跳过不必要的下载。
 

@@ -27,6 +27,8 @@ on:
       - '.github/workflows/**'
       - 'skills/**'
       - 'install.ps1'
+      - 'install-codex.ps1'
+      - 'install-claude.ps1'
       - 'README.md'
   workflow_dispatch:
     inputs:
@@ -166,8 +168,8 @@ jobs:
           ZIP_NAME="antigravity-global-skills-${{ steps.version.outputs.tag }}.zip"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-          # 打包 skills/ 目录和 install.ps1
-          zip -r "$ZIP_NAME" skills/ install.ps1 README.md
+          # 打包 skills/ 目录和所有安装脚本
+          zip -r "$ZIP_NAME" skills/ install.ps1 install-codex.ps1 install-claude.ps1 README.md
           
           # 输出文件信息
           FILE_SIZE=$(du -h "$ZIP_NAME" | cut -f1)
@@ -215,19 +217,24 @@ jobs:
 
             ### ⚡ 一键安装
 
-            **直连 GitHub：**
+            **🌟 Antigravity / Gemini CLI：**
             ```powershell
             irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install.ps1 | iex
             ```
 
-            **🇨🇳 国内加速线路1：**
+            **🤖 OpenAI Codex CLI：**
             ```powershell
-            irm https://gh-raw.988669.xyz/anti-skills/install.ps1 | iex
+            irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install-codex.ps1 | iex
             ```
 
-            **🇨🇳 国内加速线路2：**
+            **🟣 Claude Code CLI：**
             ```powershell
-            irm https://gh-raw.966788.xyz/anti-skills/install.ps1 | iex
+            irm https://raw.githubusercontent.com/geekoutnet/antigravity-global-skills/master/install-claude.ps1 | iex
+            ```
+
+            **🇨🇳 国内加速 (Gemini)：**
+            ```powershell
+            irm https://gh-raw.988669.xyz/anti-skills/install.ps1 | iex
             ```
           files: ${{ env.ZIP_NAME }}
           draft: false
