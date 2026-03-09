@@ -368,6 +368,11 @@ function Update-GeminiConfig {
             Trigger = "当用户提到 重构、refactor、代码异味、code smell、技术债务、tech debt、遗留代码、legacy、屎山、烂代码、Clean Code、SOLID、模块化拆分、代码太乱了、改不动了、太复杂了、耦合太严重、圈复杂度 等相关意图时"
             Role = "以代码重构与技术债务治理专家身份，提供安全、渐进式的重构策略和实施方案"
         }
+        "windows-shell" = @{
+            Icon = "🛡️"; Title = "Windows Shell 兼容性守卫"
+            Trigger = "【全局自动生效 alwaysApply】在 Windows 系统上执行任何 Shell 命令时始终激活。禁止使用 && 连接符、禁止生成 BOM 编码文件、禁止 bash 特有语法"
+            Role = "以 Windows Shell 兼容性守卫身份，自动拦截并修正所有不兼容 PowerShell 5.x 的命令语法和编码问题"
+        }
     }
 
     # --- STEP 3: 重新读取文件内容，确保拿到最新版本 ---
